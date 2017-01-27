@@ -12,16 +12,19 @@ http://qwone.com/~jason/20Newsgroups/
 '''
 
 from __future__ import print_function
+
 import os
+
 import numpy as np
+
 np.random.seed(1337)
 
 from keras.preprocessing.text import text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences
-from keras.utils.np_utils import to_categorical
 from keras.layers import Dense, Input, Flatten
 from keras.layers import Conv1D, MaxPooling1D, Embedding
 from keras.models import Model
+from keras.layers.core import Dropout
 from keras.utils.visualize_util import plot
 import sys
 
@@ -114,6 +117,7 @@ sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
 embedded_sequences = embedding_layer(sequence_input)
 x = Conv1D(128, 5, activation='relu')(embedded_sequences)
 x = MaxPooling1D(5)(x)
+x = Dropout(0.2)(x)
 x = Conv1D(128, 5, activation='relu')(x)
 x = MaxPooling1D(5)(x)
 x = Conv1D(128, 5, activation='relu')(x)
@@ -128,7 +132,16 @@ model.compile(loss='sparse_categorical_crossentropy',
               optimizer='rmsprop',
               metrics=['acc'])
 
-# happy learning!
-model.fit(X_train, y_train[..., np.newaxis],
-          validation_data=(X_val, y_val[..., np.newaxis]),
-          nb_epoch=20, batch_size=128)
+f = open('metrics.txt', 'w')
+nb_epoch = 20
+for iteration in range(1, nb_epoch+1):
+    print()
+    print('-' * 50)
+    print('Iteration', iteration)
+    # happy learning!
+    history=model.fit(X_train, y_train[..., np.newaxis],
+              validation_data=(X_val, y_val[..., np.newaxis]),
+              nb_epoch=1, batch_size=128)
+
+    f.write(str(history.history['acc'])+','+str(history.history['loss'])+','+str(history.history['val_acc'])+','+str(history.history['val_loss'])+'\n')
+f.close()

@@ -18,7 +18,7 @@ from keras.utils.visualize_util import plot
 
 batch_size = 128
 nb_classes = 10
-nb_epoch = 20
+nb_epoch = 3
 
 # the data, shuffled and split between train and test sets
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -53,9 +53,13 @@ model.compile(loss='categorical_crossentropy',
               optimizer=RMSprop(),
               metrics=['accuracy'])
 
-history = model.fit(X_train, Y_train,
-                    batch_size=batch_size, nb_epoch=nb_epoch,
-                    verbose=1, validation_data=(X_test, Y_test))
-score = model.evaluate(X_test, Y_test, verbose=0)
-print('Test score:', score[0])
-print('Test accuracy:', score[1])
+f = open('metrics.txt', 'w')
+for iteration in range(1, nb_epoch+1):
+    print()
+    print('-' * 50)
+    print('Iteration', iteration)
+    history = model.fit(X_train, Y_train,
+                        batch_size=batch_size, nb_epoch=1,
+                        verbose=1, validation_data=(X_test, Y_test))
+    f.write(str(history.history['acc'])+','+str(history.history['loss'])+','+str(history.history['val_acc'])+','+str(history.history['val_loss']))
+f.close()
